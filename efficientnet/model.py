@@ -54,17 +54,17 @@ BlockArgs.__new__.__defaults__ = (None,) * len(BlockArgs._fields)
 DEFAULT_BLOCKS_ARGS = [
     BlockArgs(kernel_size=3, num_repeat=1, input_filters=32, output_filters=16,
               expand_ratio=1, id_skip=True, strides=[1, 1], se_ratio=0.25),
-    BlockArgs(kernel_size=3, num_repeat=2, input_filters=16, output_filters=24,
-              expand_ratio=6, id_skip=True, strides=[2, 2], se_ratio=0.25),
-    BlockArgs(kernel_size=5, num_repeat=2, input_filters=24, output_filters=40,
-              expand_ratio=6, id_skip=True, strides=[2, 2], se_ratio=0.25),
-    BlockArgs(kernel_size=3, num_repeat=3, input_filters=40, output_filters=80,
-              expand_ratio=6, id_skip=True, strides=[2, 2], se_ratio=0.25),
-    BlockArgs(kernel_size=5, num_repeat=3, input_filters=80, output_filters=112,
-              expand_ratio=6, id_skip=True, strides=[1, 1], se_ratio=0.25),
-    BlockArgs(kernel_size=5, num_repeat=4, input_filters=112, output_filters=192,
-              expand_ratio=6, id_skip=True, strides=[2, 2], se_ratio=0.25),
-    BlockArgs(kernel_size=3, num_repeat=1, input_filters=192, output_filters=320,
+    # BlockArgs(kernel_size=3, num_repeat=2, input_filters=16, output_filters=24,
+    #           expand_ratio=6, id_skip=True, strides=[2, 2], se_ratio=0.25),
+    # BlockArgs(kernel_size=5, num_repeat=2, input_filters=24, output_filters=40,
+    #           expand_ratio=6, id_skip=True, strides=[2, 2], se_ratio=0.25),
+    # BlockArgs(kernel_size=3, num_repeat=3, input_filters=40, output_filters=80,
+    #           expand_ratio=6, id_skip=True, strides=[2, 2], se_ratio=0.25),
+    # BlockArgs(kernel_size=5, num_repeat=3, input_filters=80, output_filters=112,
+    #           expand_ratio=6, id_skip=True, strides=[1, 1], se_ratio=0.25),
+    # BlockArgs(kernel_size=5, num_repeat=4, input_filters=112, output_filters=192,
+    #           expand_ratio=6, id_skip=True, strides=[2, 2], se_ratio=0.25),
+    BlockArgs(kernel_size=3, num_repeat=1, input_filters=16, output_filters=320, #input_filters = prev output_filters
               expand_ratio=6, id_skip=True, strides=[1, 1], se_ratio=0.25)
 ]
 
@@ -254,11 +254,11 @@ def EfficientNet(width_coefficient,
                  blocks_args=DEFAULT_BLOCKS_ARGS,
                  model_name='efficientnet',
                  include_top=True,
-                 weights='imagenet',
+                 weights = None,
                  input_tensor=None,
                  input_shape=None,
                  pooling=None,
-                 classes=1000,
+                 classes=120,
                  **kwargs):
     """Instantiates the EfficientNet architecture using given scaling coefficients.
     Optionally loads weights pre-trained on ImageNet.
@@ -421,55 +421,56 @@ def EfficientNet(width_coefficient,
     model = models.Model(inputs, x, name=model_name)
 
     # Load weights.
-    if weights == 'imagenet':
+    # if weights == 'imagenet':
 
-        if include_top:
-            file_name = model_name + '_weights_tf_dim_ordering_tf_kernels_autoaugment.h5'
-            file_hash = IMAGENET_WEIGHTS_HASHES[model_name][0]
-        else:
-            file_name = model_name + '_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5'
-            file_hash = IMAGENET_WEIGHTS_HASHES[model_name][1]
-        weights_path = keras_utils.get_file(
-            file_name,
-            IMAGENET_WEIGHTS_PATH + file_name,
-            cache_subdir='models',
-            file_hash=file_hash,
-        )
-        model.load_weights(weights_path)
+    #     if include_top:
+    #         file_name = model_name + '_weights_tf_dim_ordering_tf_kernels_autoaugment.h5'
+    #         file_hash = IMAGENET_WEIGHTS_HASHES[model_name][0]
+    #     else:
+    #         file_name = model_name + '_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5'
+    #         file_hash = IMAGENET_WEIGHTS_HASHES[model_name][1]
+    #     weights_path = keras_utils.get_file(
+    #         file_name,
+    #         IMAGENET_WEIGHTS_PATH + file_name,
+    #         cache_subdir='models',
+    #         file_hash=file_hash,
+    #     )
+    #     model.load_weights(weights_path)
 
-    elif weights == 'noisy-student':
+    # elif weights == 'noisy-student':
 
-        if include_top:
-            file_name = "{}_{}.h5".format(model_name, weights)
-            file_hash = NS_WEIGHTS_HASHES[model_name][0]
-        else:
-            file_name = "{}_{}_notop.h5".format(model_name, weights)
-            file_hash = NS_WEIGHTS_HASHES[model_name][1]
-        weights_path = keras_utils.get_file(
-            file_name,
-            NS_WEIGHTS_PATH + file_name,
-            cache_subdir='models',
-            file_hash=file_hash,
-        )
-        model.load_weights(weights_path)
+    #     if include_top:
+    #         file_name = "{}_{}.h5".format(model_name, weights)
+    #         file_hash = NS_WEIGHTS_HASHES[model_name][0]
+    #     else:
+    #         file_name = "{}_{}_notop.h5".format(model_name, weights)
+    #         file_hash = NS_WEIGHTS_HASHES[model_name][1]
+    #     weights_path = keras_utils.get_file(
+    #         file_name,
+    #         NS_WEIGHTS_PATH + file_name,
+    #         cache_subdir='models',
+    #         file_hash=file_hash,
+    #     )
+    #     model.load_weights(weights_path)
 
-    elif weights is not None:
-        model.load_weights(weights)
+    # elif weights is not None:
+    #     model.load_weights(weights)
 
     return model
 
 
 def EfficientNetB0(
+        alpha,beta,gamma,
         include_top=True,
-        weights='imagenet',
+        weights=None,
         input_tensor=None,
         input_shape=None,
         pooling=None,
-        classes=1000,
+        classes=120,
         **kwargs
 ):
     return EfficientNet(
-        1.0, 1.0, 224, 0.2,
+        beta, alpha, int(gamma*224), 0.2,
         model_name='efficientnet-b0',
         include_top=include_top, weights=weights,
         input_tensor=input_tensor, input_shape=input_shape,
